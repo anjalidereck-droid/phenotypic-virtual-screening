@@ -1,0 +1,11 @@
+Molecule ID,Smiles
+imid_1,O=C1NC(C2=CC=CC=C2)=C(C(=O)N1)N
+imid_2,O=C1NC(C2=CC=CN=C2)=C(C(=O)N1)N
+imid_3,O=C1NC(C2=CC=CC=C2Cl)=C(C(=O)N1)N
+imid_4,O=C1NC(C2=CC=CC=C2OC)=C(C(=O)N1)N
+imid_5,O=C1NC(C2=CC=CC=C2F)=C(C(=O)N1)N
+imid_6,O=C1NC(C2=CC=CC=C2C#N)=C(C(=O)N1)N
+imid_7,O=C1NC(C2=CC=CC=C2N)=C(C(=O)N1)N
+imid_8,O=C1NC(C2=CC=CC=C2C)=C(C(=O)N1)N
+imid_9,O=C1NC(C2=CC=CC=C2Br)=C(C(=O)N1)N
+imid_10,O=C1NC(C2=CC=CC=C2I)=C(C(=O)N1)N
