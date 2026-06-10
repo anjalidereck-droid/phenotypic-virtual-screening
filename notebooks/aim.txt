@@ -1,0 +1,11 @@
+In this project, the purpose was to:
+
+- collect and clean CRBN-specific bioactivity data
+- convert molecules into machine-readable representations
+- train predictive models for binding classification and potency estimation
+- screen new molecules computationally before any experimental work
+- rank and interpret candidate hits
+- assess the strengths and limitations of the modelling approach
+- explore more advanced graph-based learning methods for future improvement
+
+
