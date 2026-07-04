@@ -198,34 +198,7 @@ The dual-library ranking provides a rational basis for experimental prioritisati
 
 ---
 
-# Repository Structure
-
-```
-phenotypic-virtual-screening/
-│
-├── data/
-│   ├── crbn_imid_library.csv
-│   ├── virtual_screening_dual_library_results.csv
-│   ├── virtual_screening_top_hits_annotated.csv
-│   └── phenotype_image.png
-│
-├── notebooks/
-│   ├── multimodal_alignment_training.ipynb
-│   ├── multimodal_architecture_design.ipynb
-│   ├── multimodal_inference_and_screening.ipynb
-│   └── milestone14_dual_library_analysis.ipynb
-│
-├── results/
-│   ├── dual_library_combined_hits.csv
-│   ├── combined_score_distribution.png
-│   └── top_hits_interpretation.md
-│
-└── README.md
-```
-
----
-
-# 📚 References (Harvard Style)
+# References (Harvard Style)
 
 Pedro, L., Kotsias, P.C., Arús-Pous, J., Chen, H., Engkvist, O. & Tyrchan, C. (2021) *SELFIES and machine learning for molecular design: A robust representation for generative models*. Journal of Cheminformatics, 13(1), pp. 1–14.
 
