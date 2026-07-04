@@ -30,6 +30,54 @@ This project includes:
 
 ## CRBN Pipeline & Multimodal Milestones (10–14)
 
+### **Milestone 1 — Environment & Library Verification**
+- Verified Python environment  
+- Installed RDKit, scikit-learn, PyTorch, and supporting libraries  
+- Ensured reproducibility and compatibility
+
+### **Milestone 2 — CRBN Bioactivity Acquisition**
+- Queried ChEMBL for CRBN target (CHEMBL3763008)  
+- Filtered for IC50 and Ki assays  
+- Standardised units to nM
+
+### **Milestone 3 — Data Cleaning & Standardisation**
+- Removed invalid SMILES  
+- Converted activities to **pActivity**  
+- Created **binding_label** (active vs inactive)
+
+### **Milestone 4 — Feature Engineering**
+- Parsed SMILES using RDKit  
+- Generated **Morgan fingerprints**  
+- Computed RDKit physicochemical descriptors  
+- Built modelling-ready feature matrices
+
+### **Milestone 5 — Predictive Modelling**
+- Trained Random Forest classification model  
+- Trained Random Forest regression model  
+- Evaluated using ROC-AUC, PR-AUC, R², MAE, MSE  
+- Analysed feature importance
+
+### **Milestone 6 — Library Generation**
+- Built IMiD-like analogue library  
+- Generated SELFIES-based molecules  
+- Validated chemical structures
+
+### **Milestone 7 — Virtual Screening**
+- Predicted CRBN binding probability  
+- Predicted pActivity  
+- Ranked hits across both libraries
+
+### **Milestone 8 — Hit Interpretation**
+- Annotated chemical features  
+- Flagged unrealistic or charged molecules  
+- Identified chemically reasonable hits
+
+### **Milestone 9 — Graph Neural Network Extension**
+- Converted molecules into graph representations  
+- Built a minimal GNN for pIC50 prediction  
+- Compared GNN vs Random Forest  
+- Created a simple ensemble model
+
 The repository extends the classical CRBN pipeline (Milestones 1–9) with a modern multimodal phenotypic screening workflow.
 
 ### **Milestone 10 — Multimodal Encoder Construction**
