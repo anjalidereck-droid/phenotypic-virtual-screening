@@ -246,7 +246,7 @@ The dual-library ranking provides a rational basis for experimental prioritisati
 
 ---
 
-# References (Harvard Style)
+# References
 
 Pedro, L., Kotsias, P.C., Arús-Pous, J., Chen, H., Engkvist, O. & Tyrchan, C. (2021) *SELFIES and machine learning for molecular design: A robust representation for generative models*. Journal of Cheminformatics, 13(1), pp. 1–14.
 
