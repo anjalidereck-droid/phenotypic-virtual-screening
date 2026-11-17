@@ -255,5 +255,3 @@ Smith, J., Patel, R. & Chen, L. (2019) *Deep learning approaches for phenotypic 
 Wang, T., Zhao, Q. & Li, H. (2021) *Graph neural networks for molecular property prediction*. Journal of Cheminformatics, 13(2), pp. 45–60.
 
 Brown, A., Nguyen, P. & Clarke, D. (2020) *Multimodal models for drug discovery: integrating images and molecular embeddings*. Journal of Chemical Information and Modeling, 60(11), pp. 5123–5135.
-
-Kalyaanamoorthy, S. & Yadav, S. (2015) *Title of paper*. Journal Name, Volume(Issue), pages.
