@@ -1,257 +1,187 @@
-# Phenotypic Virtual Screening
+# CRBN Bioactivity Modelling and Virtual Screening
 
-  
-### AI‑Driven CRBN Bioactivity Modelling, Virtual Screening & Multimodal Phenotype‑Aligned Hit Discovery
+Independent project developed alongside my MSc in Drug Discovery with AI at the University of Liverpool.
 
-This repository contains a complete computational drug discovery workflow for **Cereblon (CRBN)**, spanning classical cheminformatics, machine learning, generative chemistry, graph neural networks, and multimodal phenotype similarity scoring. The pipeline progresses from raw ChEMBL bioactivity data to **dual‑library multimodal hit prioritisation**, producing a scientifically interpretable and reproducible CRBN discovery framework.
+This repository contains a machine learning workflow for Cereblon (CRBN), the E3 ligase substrate receptor targeted by thalidomide-type molecules and widely used in PROTAC design. The workflow goes from public ChEMBL bioactivity data to trained models, computational screening of two small molecule libraries, hit interpretation, and a critical assessment of what the models can and cannot support. A graph neural network (GNN) is explored as a possible improvement over fingerprint-based models.
 
----
+All results below come from the notebooks in this repository. They are computational predictions only. None of them has been tested experimentally.
 
-## Project Overview
+## Aims
 
-This project includes:
+1. Collect and clean CRBN-specific bioactivity data.
+2. Convert molecules into machine-readable representations.
+3. Train predictive models for binding classification and potency estimation.
+4. Screen new molecules computationally before any experimental work.
+5. Rank and interpret candidate hits.
+6. Assess the strengths and limitations of the modelling approach.
+7. Explore graph-based learning for future improvement.
 
-- Python environment verification and RDKit setup  
-- curation of **CRBN-specific bioactivity data** from ChEMBL  
-- standardisation of assay values and computation of **pActivity**  
-- generation of **binary binding labels**  
-- molecular representation via **Morgan fingerprints** and RDKit descriptors  
-- Random Forest classification and regression modelling  
-- generation of two molecular libraries:
-  - **IMiD-like analogue library**
-  - **SELFIES-based generative library**
-- virtual screening and hit ranking  
-- chemical annotation and triage  
-- critical evaluation of model and chemical limitations  
-- extension with a **Graph Neural Network (GNN)** baseline  
-- **Milestones 10–14: multimodal phenotype similarity scoring, alignment, inference, and dual‑library ranking**  
+## Summary of results
 
----
+| Stage | Result |
+|---|---|
+| Data | 606 CRBN molecules with IC50 or Ki values (216 active, 390 inactive at a 1 uM threshold) |
+| Classification (Random Forest) | ROC-AUC 0.961, PR-AUC 0.952, accuracy 0.918 on a held-out random 20% split |
+| Regression (Random Forest) | R2 0.787, MSE 0.441 (RMSE about 0.66 pActivity units) on a held-out random 20% split |
+| Screening | 97 molecules screened; highest predicted binding probability 0.121 |
+| GNN (2-layer GCN) | Test RMSE 1.60 pIC50 units, worse than the Random Forest baseline (0.83) |
 
-## CRBN Pipeline & Multimodal Milestones (10–14)
+The main honest conclusion is that the fingerprint models fit the ChEMBL data well on a random split, but the generated molecules lie far outside the training data, so the screening scores are low and should be treated as weak prioritisation signals only.
 
-### **Milestone 1 — Environment & Library Verification**
-- Verified Python environment  
-- Installed RDKit, scikit-learn, PyTorch, and supporting libraries  
-- Ensured reproducibility and compatibility
+## 1. Data
 
-### **Milestone 2 — CRBN Bioactivity Acquisition**
-- Queried ChEMBL for CRBN target (CHEMBL3763008)  
-- Filtered for IC50 and Ki assays  
-- Standardised units to nM
+| Stage | Records |
+|---|---|
+| Raw CRBN records downloaded from ChEMBL (v33, target CHEMBL3763008) | 1,432 |
+| IC50 or Ki measurements only | 617 |
+| After unit standardisation to nM | 606 |
+| Active (activity below 1000 nM) | 216 (35.6%) |
+| Inactive | 390 |
 
-### **Milestone 3 — Data Cleaning & Standardisation**
-- Removed invalid SMILES  
-- Converted activities to **pActivity**  
-- Created **binding_label** (active vs inactive)
+Cleaning steps: filter to the CRBN target, keep IC50 and Ki, convert mixed units (nM, uM, mM) to nM, convert to molar, compute pActivity as the negative log10 of the molar value, and create a binary label at the 1 uM threshold. No invalid SMILES were found.
 
-### **Milestone 4 — Feature Engineering**
-- Parsed SMILES using RDKit  
-- Generated **Morgan fingerprints**  
-- Computed RDKit physicochemical descriptors  
-- Built modelling-ready feature matrices
+## 2. Molecular representation
 
-### **Milestone 5 — Predictive Modelling**
-- Trained Random Forest classification model  
-- Trained Random Forest regression model  
-- Evaluated using ROC-AUC, PR-AUC, R², MAE, MSE  
-- Analysed feature importance
+Each molecule is parsed with RDKit and represented by:
 
-### **Milestone 6 — Library Generation**
-- Built IMiD-like analogue library  
-- Generated SELFIES-based molecules  
-- Validated chemical structures
+- a 2048-bit Morgan fingerprint (radius 2)
+- eight RDKit physicochemical descriptors, including molecular weight, LogP, TPSA, hydrogen bond acceptor count, rotatable bond count, ring count and fraction of sp3 carbons
 
-### **Milestone 7 — Virtual Screening**
-- Predicted CRBN binding probability  
-- Predicted pActivity  
-- Ranked hits across both libraries
+The final feature matrix has 2,056 features per molecule.
 
-### **Milestone 8 — Hit Interpretation**
-- Annotated chemical features  
-- Flagged unrealistic or charged molecules  
-- Identified chemically reasonable hits
+## 3. Predictive models
 
-### **Milestone 9 — Graph Neural Network Extension**
-- Converted molecules into graph representations  
-- Built a minimal GNN for pIC50 prediction  
-- Compared GNN vs Random Forest  
-- Created a simple ensemble model
+Random Forest classifier and regressor (300 trees, random_state 42), trained on an 80/20 random split (484 training and 122 test molecules; the classification split is stratified).
 
-The repository extends the classical CRBN pipeline (Milestones 1–9) with a modern multimodal phenotypic screening workflow.
+**Classification (test set, 122 molecules)**
 
-### **Milestone 10 — Multimodal Encoder Construction**
-- molecular encoder (fingerprints → MLP or GNN)  
-- image encoder (CNN or pretrained backbone)  
-- contrastive learning objective  
-- unified molecular–image latent space  
+| Metric | Value |
+|---|---|
+| Accuracy | 0.918 |
+| ROC-AUC | 0.961 |
+| PR-AUC | 0.952 |
 
-### **Milestone 11 — Multimodal Alignment Training**
-- InfoNCE contrastive loss  
-- positive/negative pairing  
-- embedding normalisation  
-- retrieval‑based alignment evaluation  
+Confusion matrix (rows are true class, columns are predicted):
 
-### **Milestone 12 — Multimodal Architecture Design & Sanity Validation**
-- embedding CRBN molecules and phenotype images  
-- verifying clustering of known CRBN modulators  
-- confirming unrealistic molecules fall outside phenotype clusters  
+| | Predicted inactive | Predicted active |
+|---|---|---|
+| True inactive | 73 | 6 |
+| True active | 4 | 39 |
 
-### **Milestone 13 — Multimodal Encoder Integration & Real Data Alignment**
-- phenotype similarity scoring for IMiD + SELFIES libraries  
-- combined scoring with CRBN binding probability  
-- multimodal hit ranking  
+**Regression (test set, 122 molecules)**
 
-### **Milestone 14 — Multimodal inference, Screening & Hit Prioritisation**
-- IMiDs: phenotype‑only scoring  
-- SELFIES: binding + phenotype scoring  
-- combined score distribution  
-- mechanistic interpretation of top hits  
-- final ranked hit list saved as:
+| Metric | Value |
+|---|---|
+| R2 | 0.787 |
+| MSE | 0.441 |
 
-```
-results/dual_library_combined_hits.csv
-```
+Molecular weight was the most important feature for both models (about 0.30 of the regression importance), followed by ring count and individual fingerprint bits. This suggests the models partly learn molecule size and series effects present in the training data, not only binding chemistry.
 
----
+## 4. Screening libraries
 
-## Skills Acquired
+Two small libraries were generated programmatically.
 
-### Cheminformatics
-- RDKit parsing  
-- Morgan/ECFP fingerprints  
-- descriptor engineering  
-- SMILES validation  
-- chemical feature analysis  
-- hit triage  
+- **Aminouracil analogue library (10 molecules):** 5-amino-6-aryl uracils with halogen, methoxy, methyl, amino and nitrile substituents on the aryl ring. These share a cyclic imide-like core with thalidomide-type CRBN ligands but are not glutarimide IMiDs, and the library should not be read as a set of known CRBN binders.
+- **SELFIES mutation library (87 molecules):** generated by semantic mutation of seed SELFIES strings (selfies 2.1.1).
 
-### Machine Learning
-- dataset cleaning  
-- feature matrix construction  
-- Random Forest classification & regression  
-- ROC-AUC, PR-AUC, R², MAE, MSE  
-- feature importance analysis  
+Together, 97 molecules were screened.
 
-### Deep Learning
-- graph representation of molecules  
-- PyTorch + PyTorch Geometric  
-- GNN for pIC50 prediction  
-- ensemble modelling  
+## 5. Virtual screening results
 
-### Research Skills
-- reproducible workflow design  
-- critical model assessment  
-- chemical reasoning  
-- identifying limitations  
-- proposing realistic improvements  
+The trained Random Forest models predicted binding probability and pActivity for all 97 molecules.
 
----
+| Rank | Molecule | Library | Predicted binding probability | Predicted pActivity |
+|---|---|---|---|---|
+| 1 | gen_28 | SELFIES | 0.121 | 4.02 |
+| 2 | gen_38 | SELFIES | 0.113 | 4.02 |
+| 3 | gen_68 | SELFIES | 0.113 | 3.91 |
+| 4 | gen_44 | SELFIES | 0.113 | 4.52 |
+| 5 | imid_9 | Aminouracil | 0.109 | 4.47 |
+| 6 | gen_71 | SELFIES | 0.108 | 4.64 |
+| 7 | imid_10 | Aminouracil | 0.108 | 4.72 |
+| 8 | gen_74 | SELFIES | 0.102 | 3.85 |
+| 9 | gen_34 | SELFIES | 0.099 | 4.20 |
+| 10 | gen_78 | SELFIES | 0.091 | 4.44 |
 
-## Pipeline Flowchart
+Predicted probabilities for the whole screened set are low (no molecule above 0.13), against a training set that is 35.6% active. The screened molecules are therefore far from the chemical space the model learned from, and the ranking reflects relative similarity to training chemistry more than a confident binding prediction.
 
-```mermaid
-flowchart TD
-    A[Milestone 1: Environment setup] --> B[Milestone 2: CRBN bioactivity acquisition]
-    B --> C[Data cleaning and standardisation]
-    C --> C1[Filter target: CHEMBL3763008]
-    C1 --> C2[Keep IC50 and Ki only]
-    C2 --> C3[Convert units to nM]
-    C3 --> C4[Compute pActivity]
-    C4 --> C5[Create binding_label]
-    C5 --> D[Cleaned CRBN dataset]
+## 6. Hit interpretation
 
-    D --> E[Milestone 3: Feature engineering]
-    E --> E1[Parse SMILES]
-    E1 --> E2[Morgan fingerprints]
-    E2 --> E3[RDKit descriptors]
-    E3 --> E4[Feature matrix]
+Hits were annotated for chemical features and checked for chemical realism.
 
-    E4 --> F[Milestone 4: Predictive modelling]
-    F --> F1[RF classification]
-    F --> F2[RF regression]
-    F1 --> F3[Classification metrics]
-    F2 --> F4[Regression metrics]
-    F3 --> F5[Feature importance]
-    F4 --> F5
-    F5 --> G[Save models]
+- Two aminouracil analogues (imid_9 and imid_10, bromo and iodo substituted) appear in the top ten.
+- Most top-ranked SELFIES molecules contain charged or hypervalent atoms such as [S-], [P-], [B-], [C+] and [N+]. These are unlikely to be stable, synthesisable compounds, and the annotation step flagged them as unrealistic.
+- Only a small number of generated molecules were judged chemically reasonable on aromaticity, amide-like motifs and absence of formal charge.
+- The library also contains trivially small species (for example formamide-like fragments) that carry no medicinal chemistry meaning.
 
-    G --> H[Milestone 5: Library generation]
-    H --> H1[IMiD-like library]
-    H --> H2[SELFIES generative library]
+Unconstrained SELFIES mutation is therefore a poor source of drug-like candidates without validity, charge and synthetic accessibility filters.
 
-    H1 --> I[Milestone 6: Virtual screening]
-    H2 --> I
-    I --> I1[Generate features]
-    I1 --> I2[Predict binding probability]
-    I2 --> I3[Predict pActivity]
-    I3 --> I4[Rank hits]
+## 7. Graph neural network extension
 
-    I4 --> J[Milestone 7: Hit interpretation]
-    J --> J1[Annotate chemical features]
-    J1 --> J2[Flag unrealistic molecules]
-    J2 --> J3[Identify reasonable hits]
+A minimal GNN was built with PyTorch Geometric to test whether learning from molecular graphs improves pIC50 prediction.
 
-    J3 --> K[Milestone 8: Critical evaluation]
-    K --> K1[Model limitations]
-    K1 --> K2[Chemical validity limitations]
-    K2 --> K3[Future improvements]
+- Architecture: two GCN layers (hidden size 64), mean pooling, linear output
+- Node features: four atom features only (element index, degree, formal charge, aromaticity); no bond features
+- Training: 40 epochs, Adam (learning rate 1e-3), MSE loss, 80/10/10 split (484/60/62)
 
-    K3 --> L[Milestone 9: GNN extension]
-    L --> L1[Graph conversion]
-    L1 --> L2[GNN training]
-    L2 --> L3[GNN vs RF comparison]
-    L3 --> L4[Ensemble]
+| Model | Features | Test RMSE (pIC50) |
+|---|---|---|
+| Random Forest | 5 descriptors | 0.833 |
+| GCN | atom graph | 1.597 |
 
-    L4 --> M[Milestone 10–14: Multimodal pipeline]
-    M --> M1[Multimodal encoder]
-    M1 --> M2[Contrastive alignment]
-    M2 --> M3[Real data validation]
-    M3 --> M4[Multimodal inference]
-    M4 --> M5[Dual-library ranking]
-    M5 --> M6[Mechanistic interpretation]
+The GCN did not beat the Random Forest. Validation loss was still falling slowly at epoch 40, so the model is under-trained and under-featured rather than conclusively worse than all graph methods. A simple 50/50 GCN and Random Forest average was implemented and run on individual molecules, but it was not evaluated on the test set, so no ensemble performance is claimed.
 
-    M6 --> N[Final outcome: AI-driven CRBN phenotypic screening workflow]
-```
+## 8. Exploratory prototype: molecule and image embedding (not validated)
 
----
+The notebooks also contain an early prototype that embeds molecules (Morgan fingerprint, small MLP) and an image (ResNet18 with ImageNet weights) into a shared 128-dimensional space and ranks molecules by cosine similarity to the image embedding. This is code scaffolding for a future phenotype-conditioned screening idea, not a result.
 
-# Mechanistic Interpretation of Top SELFIES Hits
+- The contrastive (InfoNCE) objective is defined, but no training run appears in the notebooks. The molecule encoder and projection layers are randomly initialised in the scoring notebook.
+- The image used is a results plot generated in this project, not a cell-based phenotype image, and there is a single image, not paired molecule and image data.
+- Phenotype similarity scores for the two libraries are almost identical (means 0.143 and 0.144, standard deviation about 0.02) and carry no biological meaning.
+- The exported combined ranking assigns a binding probability of 0 to the aminouracil molecules and leaves the combined score empty for the SELFIES molecules, so it is not a valid ranking.
 
-High-scoring SELFIES molecules share:
+Meaningful phenotype-conditioned screening would need real paired data, such as public Cell Painting profiles linked to compounds, a trained model with a proper split, and retrieval metrics.
 
-- **halogenated heteroaromatic rings** (Cl, Br)  
-- **heteroatom-rich aromatic systems** (S, N, O)  
-- **moderately rigid scaffolds**  
-- **polarised functional groups** (carbonyls, thioethers, conjugated systems)
+## 9. Strengths and limitations
 
-These motifs support:
+**Strengths**
+- Clear, reproducible pipeline from raw ChEMBL data to ranked predictions
+- Strong fit on a held-out split (ROC-AUC 0.961, R2 0.787)
+- Both a fingerprint model and a graph model were tried and compared on the same data
+- Chemical realism of generated molecules was checked, not assumed
 
-- CRBN binding  
-- phenotype-conditioned embedding alignment  
-- scaffold stability  
+**Limitations**
+- Small dataset (606 molecules), dominated by a few chemical series, with IC50 and Ki values from different assays pooled together
+- Random train and test splits likely overstate performance; a scaffold split was not used
+- The cleaning step did not filter on the ChEMBL standard relation column, so censored values (for example "greater than") may be included
+- Molecular weight dominates feature importance, which suggests size and series bias
+- Screened molecules lie outside the model's applicability domain (all predicted probabilities below 0.13)
+- SELFIES generation was not seeded and had no validity filters, so library composition and molecule IDs change between runs and many generated molecules are chemically unrealistic
+- GNN features were minimal and training was short
+- No docking or structural check against the CRBN thalidomide-binding pocket was performed
+- The multimodal prototype is untrained and not valid (Section 8)
 
----
+## 10. Future work
 
-# Discussion
+1. Re-split the data by scaffold and report scaffold-split metrics alongside the random split.
+2. Filter censored activity values and separate IC50 from Ki, or model them separately.
+3. Constrain generation: enforce valid, neutral, drug-like molecules with synthetic accessibility filters, and seed all random steps.
+4. Quantify the applicability domain, for example with nearest-neighbour Tanimoto similarity to the training set.
+5. Improve the GNN: add bond features, try message-passing variants such as GIN or AttentiveFP, tune hyperparameters, and evaluate the ensemble on the test set.
+6. Add a structural sanity check, such as docking top hits into the CRBN thalidomide-binding pocket.
+7. Replace the image prototype with real paired molecule and phenotype data and a trained, evaluated contrastive model.
 
-### Multimodal Integration
-Combining biochemical and phenotypic signals yields biologically meaningful hit prioritisation.
+## Reproducibility
 
-### IMiDs vs SELFIES
-IMiDs act as phenotypic anchors.  
-SELFIES explore broader chemical space and outperform IMiDs in combined score.
+Notebooks currently use absolute Windows file paths. Replace them with relative paths before running.
 
-### Implications
-The dual-library ranking provides a rational basis for experimental prioritisation and SAR development.
+Main dependencies: pandas, numpy, RDKit, scikit-learn, umap-learn, selfies 2.1.1, PyTorch, PyTorch Geometric, torchvision, matplotlib, seaborn. Install with `pip install -r requirements.txt` once a requirements file is added.
 
----
+## References
 
-# References
-
-Pedro, L., Kotsias, P.C., Arús-Pous, J., Chen, H., Engkvist, O. & Tyrchan, C. (2021) *SELFIES and machine learning for molecular design: A robust representation for generative models*. Journal of Cheminformatics, 13(1), pp. 1–14.
-
-Smith, J., Patel, R. & Chen, L. (2019) *Deep learning approaches for phenotypic screening*. Nature Communications, 10(1), pp. 1–12.
-
-Wang, T., Zhao, Q. & Li, H. (2021) *Graph neural networks for molecular property prediction*. Journal of Cheminformatics, 13(2), pp. 45–60.
-
-Brown, A., Nguyen, P. & Clarke, D. (2020) *Multimodal models for drug discovery: integrating images and molecular embeddings*. Journal of Chemical Information and Modeling, 60(11), pp. 5123–5135.
+- Zdrazil, B. et al. (2024). The ChEMBL Database in 2023: a drug discovery platform spanning multiple bioactivity data types and time periods. Nucleic Acids Research, 52(D1), D1180 to D1192.
+- Krenn, M., Haese, F., Nigam, A., Friederich, P. and Aspuru-Guzik, A. (2020). Self-referencing embedded strings (SELFIES): A 100% robust molecular string representation. Machine Learning: Science and Technology, 1, 045024.
+- Breiman, L. (2001). Random forests. Machine Learning, 45, 5 to 32.
+- Kipf, T. N. and Welling, M. (2017). Semi-supervised classification with graph convolutional networks. ICLR 2017.
+- Fey, M. and Lenssen, J. E. (2019). Fast graph representation learning with PyTorch Geometric. ICLR Workshop on Representation Learning on Graphs and Manifolds.
+- RDKit: open-source cheminformatics software, https://www.rdkit.org
